@@ -2,6 +2,13 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
+def predict(x):
+    result = 0.0
+    for n in range(0,5):
+        result += w_val[n][0]*x**n
+    return result
+
+
 x = tf.placeholder(tf.float32, [None, 5])
 w = tf.Variable(tf.zeros([5,1]))
 y = tf.matmul(x,w)
@@ -35,3 +42,11 @@ for _ in range(100000):
 
 w_val = sess.run(w)
 print (w_val)
+
+fig = plt.figure()
+subplot = fig.add_subplot(1,1,1)
+subplot.set_xlim(1,12)
+subplot.scatter(range(1,13), train_t)
+linex = np.linspace(1,12,100)
+liney = predict(linex)
+subplot.plot(linex, liney)
