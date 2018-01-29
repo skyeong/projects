@@ -1,10 +1,7 @@
-""" Solution for simple logistic regression model for MNIST
-with placeholder
+""" Solution for assignment 2b - Task 1
+logistic regression model for MNIST with placeholder
 MNIST dataset: yann.lecun.com/exdb/mnist/
-Created by Chip Huyen (huyenn@cs.stanford.edu)
-CS20: "TensorFlow for Deep Learning Research"
-cs20.stanford.edu
-Lecture 03
+Target accuarcy >=0 0.97
 """
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
@@ -17,9 +14,15 @@ import time
 import utils
 
 # Define paramaters for the model
-learning_rate = 0.01
-batch_size = 128
-n_epochs = 100
+learning_rate = 0.001
+batch_size = 128  # 128
+n_epochs = 150
+
+n_nodes_hl1 = 400    #400
+n_nodes_hl2 = 150   # 150
+n_nodes_hl3 = 80
+# n_nodes_hl4 = 100
+n_classes = 10
 
 # Step 1: Read in data
 # using TF Learn's built in function to load MNIST data to the folder data/mnist
@@ -27,40 +30,51 @@ mnist = input_data.read_data_sets('data/mnist', one_hot=True)
 X_batch, Y_batch = mnist.train.next_batch(batch_size)
 
 # Step 2: create placeholders for features and labels
-# each image in the MNIST data is of shape 28*28 = 784
-# therefore, each image is represented with a 1x784 tensor
-# there are 10 classes for each image, corresponding to digits 0 - 9. 
-# each lable is one hot vector.
 X = tf.placeholder(tf.float32, [batch_size, 784], name='image') 
-Y = tf.placeholder(tf.int32, [batch_size, 10], name='label')
+Y = tf.placeholder(tf.int32, [batch_size, n_classes], name='label')
 
 # Step 3: create weights and bias
-# w is initialized to random variables with mean of 0, stddev of 0.01
-# b is initialized to 0
-# shape of w depends on the dimension of X and Y so that Y = tf.matmul(X, w)
-# shape of b depends on Y
-w = tf.get_variable(name='weights', shape=(784, 10), initializer=tf.random_normal_initializer())
-b = tf.get_variable(name='bias', shape=(1, 10), initializer=tf.zeros_initializer())
+hl1 = {'weights':tf.Variable(tf.random_normal([784, n_nodes_hl1])),
+					'biases':tf.Variable(tf.random_normal([n_nodes_hl1]))}
+hl2 = {'weights':tf.Variable(tf.random_normal([n_nodes_hl1, n_nodes_hl2])),
+					'biases':tf.Variable(tf.random_normal([n_nodes_hl2]))}
+hl3 = {'weights':tf.Variable(tf.random_normal([n_nodes_hl2, n_nodes_hl3])),
+					'biases':tf.Variable(tf.random_normal([n_nodes_hl3]))}
+# hl4 = {'weights':tf.Variable(tf.random_normal([n_nodes_hl3, n_nodes_hl4])),
+# 					'biases':tf.Variable(tf.random_normal([n_nodes_hl4]))}
+output_layer = {'weights':tf.Variable(tf.random_normal([n_nodes_hl3, n_classes])),
+				'biases':tf.Variable(tf.random_normal([n_classes]))}
+
 
 # Step 4: build model
-# the model that returns the logits.
-# this logits will be later passed through softmax layer
-logits = tf.matmul(X, w) + b 
+l1 = tf.add(tf.matmul(X, hl1['weights']), hl1['biases'])
+l1 = tf.nn.sigmoid(l1)
+
+l2 = tf.add(tf.matmul(l1, hl2['weights']), hl2['biases'])
+l2 = tf.nn.sigmoid(l2)
+
+l3 = tf.add(tf.matmul(l2, hl3['weights']), hl3['biases'])
+l3 = tf.nn.sigmoid(l3)
+
+# l4 = tf.add(tf.matmul(l3, hl4['weights']), hl4['biases'])
+# l4 = tf.nn.softmax(l4)
+
+logits = tf.matmul(l3, output_layer['weights'] + output_layer['biases'])
+
 
 # Step 5: define loss function
 # use cross entropy of softmax of logits as the loss function
 entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y, name='loss')
 loss = tf.reduce_mean(entropy) # computes the mean over all the examples in the batch
-# loss = tf.reduce_mean(-tf.reduce_sum(tf.nn.softmax(logits) * tf.log(Y), reduction_indices=[1]))
 
 # Step 6: define training op
 # using gradient descent with learning rate of 0.01 to minimize loss
 optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
 # Step 7: calculate accuracy with test set
-preds = tf.nn.softmax(logits)
-correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(Y, 1))
-accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
+prediction = tf.nn.softmax(logits)
+correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y, 1))
+accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
 
 writer = tf.summary.FileWriter('./graphs/logreg_placeholder', tf.get_default_graph())
 with tf.Session() as sess:

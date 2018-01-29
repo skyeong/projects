@@ -11,7 +11,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
 import tensorflow as tf
 
-
 sess = tf.InteractiveSession()
 
 
@@ -139,8 +138,11 @@ x = tf.random_normal([1,300],dtype=tf.float32)
 y = tf.random_normal([1,300],dtype=tf.float32)
 diff = tf.subtract(x, y)
 avg_all = tf.reduce_mean(diff)
-# def f1(): return tf.metrics.mean_squared_error(x, y)         
-# def f2(): return tf.reduce_sum(tf.abs(x - y)) 
+f1 = lambda: tf.metrics.mean_squared_error(x, y)         
+f2 = lambda: tf.reduce_sum(tf.abs(x - y)) 
 out = tf.cond(tf.less(avg_all, 0), f1, f2)
 print(sess.run(out))
 
+#   f1 = lambda: tf.add(x, y)       # if x<y
+#     f2 = lambda: tf.subtract(x, y)  # if x>y
+#     f3 = lambda: tf.constant(0.0)   # otherwise

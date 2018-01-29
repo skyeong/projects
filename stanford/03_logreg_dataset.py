@@ -18,7 +18,7 @@ import utils
 # Define paramaters for the model
 learning_rate = 0.01
 batch_size = 128
-n_epochs = 30
+n_epochs = 60
 n_train = 60000
 n_test = 10000
 
