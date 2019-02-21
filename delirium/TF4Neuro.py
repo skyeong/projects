@@ -101,7 +101,7 @@ class TF4Neuro:
         #     sess.run(self.train_step, feed_dict={x:batch_x, t:batch_t})
         #     if (i%(niter/10) == 0):
         #         loss_val, acc_val = sess.run([loss, accuracy], feed_dict={x:train_x, t:train_t})
-        #         print('Step: %d, Loss: %f, Accuracy: %f' % (i, loss_val, acc_val) )
+<        #         print('Step: %d, Loss: %f, Accuracy: %f' % (i, loss_val, acc_val) )
         datapoint_size = len(train_x)
         batch_size = 20
         for i,ii in enumerate(range(niter)):

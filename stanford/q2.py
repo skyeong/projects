@@ -16,11 +16,11 @@ import utils
 # Define paramaters for the model
 learning_rate = 0.001
 batch_size = 128  # 128
-n_epochs = 150
+n_epochs = 100
 
 n_nodes_hl1 = 400    #400
-n_nodes_hl2 = 150   # 150
-n_nodes_hl3 = 80
+n_nodes_hl2 = 200   # 150
+n_nodes_hl3 = 400
 # n_nodes_hl4 = 100
 n_classes = 10
 
@@ -34,37 +34,37 @@ X = tf.placeholder(tf.float32, [batch_size, 784], name='image')
 Y = tf.placeholder(tf.int32, [batch_size, n_classes], name='label')
 
 # Step 3: create weights and bias
-hl1 = {'weights':tf.Variable(tf.random_normal([784, n_nodes_hl1])),
-					'biases':tf.Variable(tf.random_normal([n_nodes_hl1]))}
-hl2 = {'weights':tf.Variable(tf.random_normal([n_nodes_hl1, n_nodes_hl2])),
-					'biases':tf.Variable(tf.random_normal([n_nodes_hl2]))}
-hl3 = {'weights':tf.Variable(tf.random_normal([n_nodes_hl2, n_nodes_hl3])),
-					'biases':tf.Variable(tf.random_normal([n_nodes_hl3]))}
+hl1 = {'weights':tf.get_variable("h1_weight", [784, n_nodes_hl1], initializer=tf.random_normal_initializer()),
+		'biases':tf.get_variable("h1_biases", [n_nodes_hl1], initializer=tf.constant_initializer(0.0))}
+hl2 = {'weights':tf.get_variable("h2_weight", [n_nodes_hl1, n_nodes_hl2], initializer=tf.random_normal_initializer()),
+		'biases':tf.get_variable("h2_biases", [n_nodes_hl2], initializer=tf.constant_initializer(0.0))}
+hl3 = {'weights':tf.get_variable("h3_weight",[n_nodes_hl2, n_nodes_hl3], initializer=tf.random_normal_initializer()),
+		'biases':tf.get_variable("h3_biases",[n_nodes_hl3], initializer=tf.constant_initializer(0.0))}
 # hl4 = {'weights':tf.Variable(tf.random_normal([n_nodes_hl3, n_nodes_hl4])),
-# 					'biases':tf.Variable(tf.random_normal([n_nodes_hl4]))}
-output_layer = {'weights':tf.Variable(tf.random_normal([n_nodes_hl3, n_classes])),
-				'biases':tf.Variable(tf.random_normal([n_classes]))}
+# 		'biases':tf.Variable(tf.random_normal([n_nodes_hl4]))}
+output_layer = {'weights':tf.get_variable("output_weight",[n_nodes_hl3, n_classes],initializer=tf.random_normal_initializer()),
+			  	 'biases':tf.get_variable("output_biases",[n_classes],initializer=tf.constant_initializer(0.0))}
 
 
 # Step 4: build model
-l1 = tf.add(tf.matmul(X, hl1['weights']), hl1['biases'])
+l1 = tf.matmul(X, hl1['weights']) + hl1['biases']
 l1 = tf.nn.sigmoid(l1)
 
-l2 = tf.add(tf.matmul(l1, hl2['weights']), hl2['biases'])
+l2 = tf.matmul(l1, hl2['weights']) + hl2['biases']
 l2 = tf.nn.sigmoid(l2)
 
-l3 = tf.add(tf.matmul(l2, hl3['weights']), hl3['biases'])
+l3 = tf.matmul(l2, hl3['weights']) + hl3['biases']
 l3 = tf.nn.sigmoid(l3)
 
 # l4 = tf.add(tf.matmul(l3, hl4['weights']), hl4['biases'])
 # l4 = tf.nn.softmax(l4)
 
-logits = tf.matmul(l3, output_layer['weights'] + output_layer['biases'])
+logits = tf.matmul(l3, output_layer['weights']) + output_layer['biases']
 
 
 # Step 5: define loss function
 # use cross entropy of softmax of logits as the loss function
-entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y, name='loss')
+entropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits, labels=Y, name='loss')
 loss = tf.reduce_mean(entropy) # computes the mean over all the examples in the batch
 
 # Step 6: define training op
