@@ -3,3 +3,6 @@ __pycache__
 .local
 data
 mnist
+*.png
+*.csv
+.Rhistory
